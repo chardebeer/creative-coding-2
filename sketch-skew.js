@@ -23,17 +23,26 @@ const sketch = ({context, width, height}) => {
 
   let x, y, w, h, fill, stroke, blend;
 
-  const num = 40;
+  const num = 30;
   const degrees = -30;
+  const numStars = 30;
 
   const rects = []
+  const stars = [];
+
 
   const rectColors = [
     random.pick(catppuccinColors),
     random.pick(catppuccinColors),
   ]
+  const starColors = [
+    random.pick(catppuccinColors),
+    random.pick(catppuccinColors),
+  ];
 
   const bgColor = random.pick(catppuccinColors).hex
+
+  const starSize = random.range(80, 150)
 
   const mask = {
     radius: width * 0.4,
@@ -42,6 +51,7 @@ const sketch = ({context, width, height}) => {
     y: height * 0.58
   }
 
+//Rectangles
   for (let i = 0; i < num; i++){
     x = random.range( 0, width);
     y = random.range( 0, height);
@@ -52,10 +62,21 @@ const sketch = ({context, width, height}) => {
   //fill =  `rgba(${random.range(133, 242)} , ${random.range(158, 213)}, ${random.range(207, 230)}, 1)`;
    stroke = random.pick(rectColors).hex;
   // stroke = "#292c3c";
-    blend = (random.value() > 0.5) ? 'overlay' : 'source-over';
+   blend = random.pick(['overlay', 'source-over', 'soft-light']);
 
     rects.push({x, y, w, h, fill, stroke, blend});
   }
+
+  //Stars
+    for (let i = 0; i < numStars; i++) {
+      const x = random.range(0, width);
+      const y = random.range(0, height);
+      const radius = random.range(30, 80);
+      const points = 5;
+      const fillColor = random.pick(starColors).hex;
+  
+      stars.push({ x, y, radius, points, fillColor });
+    }
 
   return ({ context, width, height }) => {
     context.fillStyle = bgColor;
@@ -81,7 +102,8 @@ const sketch = ({context, width, height}) => {
     context.strokeStyle = stroke;
     context.fillStyle = fill;
     context.lineWidth = 15;
-    
+    //drawOffsetCircles({ context, x: 400, y: 400, maxRadius: 150, rings: 5 });
+
     context.globalCompositeOperation = blend
 
     drawSkewedRect({context, w, h, degrees})
@@ -93,12 +115,15 @@ const sketch = ({context, width, height}) => {
     context.shadowOffsetX = -10;
     context.shadowOffsetY = 20;
 
+   drawStar({ context, x: 100, y: 100, radius: starSize, points: 5 });
+
     context.fill();
 
     context.shadowColor = null
 
     context.stroke();
     context.globalCompositeOperation = 'source-over'
+    
 
     context.lineWidth = 2;
     context.strokeStyle = '#292c3c'
@@ -106,7 +131,11 @@ const sketch = ({context, width, height}) => {
 
    context.restore();
   });
+
   context.restore();
+// Draw stars (on top of rectangles)
+
+
 
   //Polygon Outline
   context.save();
@@ -157,5 +186,31 @@ const drawPolygon = ({context, radius = 100, sides = 3}) => {
   context.closePath();
 
 }
+
+const drawOffsetCircles = ({ context, x, y, maxRadius, rings }) => {
+  for (let i = 0; i < rings; i++) {
+    const radius = maxRadius * (1 - i / rings);
+    context.beginPath();
+    context.arc(x, y, radius, 0, Math.PI * 2);
+    context.stroke();
+  }
+};
+
+const drawStar = ({ context, x, y, radius, points }) => {
+  const innerRadius = radius * 0.5;
+  const slice = Math.PI * 2 / points;
+
+  context.beginPath();
+  for (let i = 0; i < points * 2; i++) {
+    const angle = i * slice * 0.5 - Math.PI * 0.5;
+    const r = i % 2 === 0 ? radius : innerRadius;
+    context.lineTo(x + Math.cos(angle) * r, y + Math.sin(angle) * r);
+  }
+  context.closePath();
+};
+
+
+
+
 
 canvasSketch(sketch, settings);
