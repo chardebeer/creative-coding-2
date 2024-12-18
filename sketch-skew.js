@@ -24,8 +24,8 @@ const sketch = ({context, width, height}) => {
   let x, y, w, h, fill, stroke, blend;
 
   const num = 40;
-  const degrees = -30;
-  const numStars = 50;
+  const degrees = -20;
+  const numStars = 80;
   const rects = []
   const stars = []
 
@@ -64,7 +64,7 @@ const sketch = ({context, width, height}) => {
     rects.push({x, y, w, h, fill, stroke, blend});
   }
 
-  for (let i = 0; i < num; i++){
+  for (let i = 0; i < numStars; i++){
     x = random.range( 0, width);
     y = random.range( 0, height);
     w = random.range( 600, width);
@@ -74,7 +74,7 @@ const sketch = ({context, width, height}) => {
   //fill =  `rgba(${random.range(133, 242)} , ${random.range(158, 213)}, ${random.range(207, 230)}, 1)`;
    stroke = random.pick(starColors).hex;
   // stroke = "#292c3c";
-  const blend = random.pick(['overlay', 'source-over', 'soft-light']);
+  const blend = random.pick(['overlay', 'source-over', 'screen', 'destination-out']);
 
     stars.push({x, y, w, h, fill, stroke, blend});
   }
@@ -141,7 +141,7 @@ const sketch = ({context, width, height}) => {
 
     context.strokeStyle = stroke;
     context.fillStyle = fill;
-    context.lineWidth = 15;
+    context.lineWidth = 20;
     //drawOffsetCircles({ context, x: 400, y: 400, maxRadius: 150, rings: 5 });
 
     context.globalCompositeOperation = blend
@@ -149,7 +149,7 @@ const sketch = ({context, width, height}) => {
     drawStar({ context, x: x * 0.75, y: y * 0.5, radius: starSize, points: 5 });
 
     shadowColor = Color.offsetHSL(fill, 0, 0, -20)
-    shadowColor.rgba[3] = 0.5;
+    shadowColor.rgba[0] = 0.5;
 
     context.shadowColor = Color.style(shadowColor.rgba);
     context.shadowOffsetX = -10;
