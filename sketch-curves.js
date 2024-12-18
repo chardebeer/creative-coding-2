@@ -1,13 +1,18 @@
 const canvasSketch = require('canvas-sketch');
+const math = require('canvas-sketch-util/math');
 const random = require('canvas-sketch-util/random');
+const catppuccinColors = require('./catppuccin-colors');
+const Color = require('canvas-sketch-util/color');
+const colormap = require('colormap');
 
 const settings = {
-  dimensions: [ 1080, 1080 ]
+  dimensions: [ 1080, 1080 ],
+  animate: true,
 };
 
 const sketch = ({width, height}) => {
-const cols = 12;
-const rows = 6;
+const cols = 80;
+const rows = 20;
 const numCells = cols * rows
 
 //grid
@@ -22,23 +27,36 @@ const my = (height - gh) * 0.5;
 
 const points = [];
 
-let x, y, n;
-let frequency = 0.002;
+let x, y, n, lineWidth, color;
+let frequency = 0.00175;
 let amplitude = 90;
 
+const colors = colormap({
+
+   // colormap: 'cubehelix',
+   colormap: 'spring',
+    nshades: amplitude,
+    format: 'rgbaString',
+    alpha: random.range(0.1, 1),
+
+})
 
 for(let i = 0; i < numCells; i++){
   x = (i % cols) * cw;
   y = Math.floor(i/cols) * ch;
 
   n = random.noise2D(x, y, frequency, amplitude);
-  x += n;
-  y += n;
+  // x += n;
+  // y += n;
 
-  points.push(new Point({x, y}))
+  lineWidth = math.mapRange(n, -amplitude, amplitude, 0, 5);
+
+  color = colors[Math.floor(math.mapRange(n, -amplitude, amplitude, 0, amplitude))];
+
+  points.push(new Point({x, y, lineWidth, color}))
 }
 
-  return ({ context, width, height }) => {
+  return ({ context, width, height, frame }) => {
     context.fillStyle = '#292c3c';
     context.fillRect(0, 0, width, height);
 
@@ -48,24 +66,45 @@ for(let i = 0; i < numCells; i++){
     context.strokeStyle = '#f4b8e4';
     context.lineWidth = 5;
 
+    //update pos
+    points.forEach(point =>{
+      n = random.noise2D(point.ix + frame * 4, point.iy, frequency, amplitude);
+      point.x = point.ix + n;
+      point.y = point.iy + n;
+    })
+
+    let lastx, lasty;
+
      //draw lines
      for(let r = 0; r < rows; r++){
-     context.beginPath();
 
     for(let c = 0; c < cols - 1; c++){
       const curr = points[r * cols + c + 0]
       const next = points[r * cols + c + 1]
 
-      const mx = curr.x + (next.x - curr.x) * 0.5;
-      const my = curr.y + (next.y - curr.y) * 0.5;
+      const mx = curr.x + (next.x - curr.x) * 0.8;
+      const my = curr.y + (next.y - curr.y) * 4.5;
 
-    if (c == 0) context.moveTo(curr.x, curr.y);
-    else if (c == cols - 2) context.quadraticCurveTo(curr.x, curr.y, next.x , next.y);
-    else context.quadraticCurveTo(curr.x, curr.y, mx, my);
-    }
-    
-    context.stroke();
-  }
+      if (!c){
+        lastx = curr.x;
+        lasty = curr.y;
+      }
+
+      context.beginPath();
+      context.lineWidth = curr.lineWidth;
+      context.strokeStyle = curr.color;
+
+      context.moveTo(lastx, lasty)
+      context.quadraticCurveTo(curr.x, curr.y, mx, my);
+
+      context.stroke();
+
+      lastx = mx - c / cols * 250;
+      lasty = my - r / rows * 250;
+
+    };
+
+  };
 
     //draw points
     points.forEach(point =>{
@@ -79,9 +118,14 @@ for(let i = 0; i < numCells; i++){
 canvasSketch(sketch, settings);
 
 class Point {
-  constructor({x, y}){
+  constructor({x, y, lineWidth, color}){
     this.x = x;
     this.y = y;
+    this.lineWidth = lineWidth;
+    this.color = color;
+
+    this.ix = x;
+    this.iy = y;
   }
 
   draw(context){
