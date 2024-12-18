@@ -10,10 +10,10 @@ const settings = {
 };
 
 const sketch = ({context, width, height}) => {
-  let x, y, w, h, fill, stroke;
+  let x, y, w, h, fill, stroke, blend;
   let shadowColor;
 
-  const num = 20;
+  const num = 40;
   const degrees = -30;
 
   const rects = []
@@ -21,7 +21,6 @@ const sketch = ({context, width, height}) => {
   const rectColors = [
     random.pick(catppuccinColors),
     random.pick(catppuccinColors),
-    random.pick(catppuccinColors)
   ]
 
   const bgColor = random.pick(catppuccinColors).hex
@@ -29,15 +28,16 @@ const sketch = ({context, width, height}) => {
   for (let i = 0; i < num; i++){
     x = random.range( 0, width);
     y = random.range( 0, height);
-    w = random.range( 200, 600);
+    w = random.range( 600, width);
     h = random.range( 40, 200);
 
    fill = random.pick(rectColors).hex;
   //fill =  `rgba(${random.range(133, 242)} , ${random.range(158, 213)}, ${random.range(207, 230)}, 1)`;
    stroke = random.pick(rectColors).hex;
   // stroke = "#292c3c";
+    blend = (random.value() > 0.5) ? 'overlay' : 'source-over';
 
-    rects.push({x, y, w, h, fill, stroke});
+    rects.push({x, y, w, h, fill, stroke, blend});
   }
 
   return ({ context, width, height }) => {
@@ -45,7 +45,7 @@ const sketch = ({context, width, height}) => {
     context.fillRect(0, 0, width, height);
 
     rects.forEach(rect => { 
-    const {x, y, w , h, fill, stroke} = rect;
+    const {x, y, w , h, fill, stroke, blend} = rect;
 
     context.save();
     context.translate(x , y);
@@ -54,6 +54,7 @@ const sketch = ({context, width, height}) => {
     context.fillStyle = fill;
     context.lineWidth = 15;
     
+    context.globalCompositeOperation = blend
 
     drawSkewedRect({context, w, h, degrees})
 
@@ -68,6 +69,11 @@ const sketch = ({context, width, height}) => {
 
     context.shadowColor = null
 
+    context.stroke();
+    context.globalCompositeOperation = 'source-over'
+
+    context.lineWidth = 2;
+    context.strokeStyle = '#292c3c'
     context.stroke();
 
    context.restore();
