@@ -11,7 +11,7 @@ const settings = {
 };
 
 const sketch = ({width, height}) => {
-const cols = 80;
+const cols = 100;
 const rows = 20;
 const numCells = cols * rows
 
@@ -28,16 +28,16 @@ const my = (height - gh) * 0.5;
 const points = [];
 
 let x, y, n, lineWidth, color;
-let frequency = 0.00175;
-let amplitude = 90;
+let frequency = 0.0015;
+let amplitude = 100;
 
 const colors = colormap({
 
-   // colormap: 'cubehelix',
-   colormap: 'spring',
+    colormap: 'phase',
+  // colormap: 'spring',
     nshades: amplitude,
     format: 'rgbaString',
-    alpha: random.range(0.1, 1),
+    alpha: random.range(0.8, 1),
 
 })
 
@@ -45,7 +45,7 @@ for(let i = 0; i < numCells; i++){
   x = (i % cols) * cw;
   y = Math.floor(i/cols) * ch;
 
-  n = random.noise2D(x, y, frequency, amplitude);
+  n = random.noise2D(x + 200, y -10, frequency, amplitude);
   // x += n;
   // y += n;
 
@@ -99,8 +99,8 @@ for(let i = 0; i < numCells; i++){
 
       context.stroke();
 
-      lastx = mx - c / cols * 250;
-      lasty = my - r / rows * 250;
+      lastx = mx - c / cols * 210;
+      lasty = my - r / rows * 5;
 
     };
 
