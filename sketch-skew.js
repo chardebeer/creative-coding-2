@@ -23,26 +23,24 @@ const sketch = ({context, width, height}) => {
 
   let x, y, w, h, fill, stroke, blend;
 
-  const num = 30;
+  const num = 40;
   const degrees = -30;
-  const numStars = 30;
-
+  const numStars = 50;
   const rects = []
-  const stars = [];
-
+  const stars = []
 
   const rectColors = [
     random.pick(catppuccinColors),
     random.pick(catppuccinColors),
   ]
+
   const starColors = [
     random.pick(catppuccinColors),
     random.pick(catppuccinColors),
-  ];
+  ]
 
   const bgColor = random.pick(catppuccinColors).hex
-
-  const starSize = random.range(80, 150)
+  const starSize = random.range(70, 150)
 
   const mask = {
     radius: width * 0.4,
@@ -51,7 +49,6 @@ const sketch = ({context, width, height}) => {
     y: height * 0.58
   }
 
-//Rectangles
   for (let i = 0; i < num; i++){
     x = random.range( 0, width);
     y = random.range( 0, height);
@@ -62,21 +59,25 @@ const sketch = ({context, width, height}) => {
   //fill =  `rgba(${random.range(133, 242)} , ${random.range(158, 213)}, ${random.range(207, 230)}, 1)`;
    stroke = random.pick(rectColors).hex;
   // stroke = "#292c3c";
-   blend = random.pick(['overlay', 'source-over', 'soft-light']);
+    blend = (random.value() > 0.5) ? 'overlay' : 'source-over';
 
     rects.push({x, y, w, h, fill, stroke, blend});
   }
 
-  //Stars
-    for (let i = 0; i < numStars; i++) {
-      const x = random.range(0, width);
-      const y = random.range(0, height);
-      const radius = random.range(30, 80);
-      const points = 5;
-      const fillColor = random.pick(starColors).hex;
-  
-      stars.push({ x, y, radius, points, fillColor });
-    }
+  for (let i = 0; i < num; i++){
+    x = random.range( 0, width);
+    y = random.range( 0, height);
+    w = random.range( 600, width);
+    h = random.range( 40, 200);
+
+   fill = random.pick(starColors).hex;
+  //fill =  `rgba(${random.range(133, 242)} , ${random.range(158, 213)}, ${random.range(207, 230)}, 1)`;
+   stroke = random.pick(starColors).hex;
+  // stroke = "#292c3c";
+  const blend = random.pick(['overlay', 'source-over', 'soft-light']);
+
+    stars.push({x, y, w, h, fill, stroke, blend});
+  }
 
   return ({ context, width, height }) => {
     context.fillStyle = bgColor;
@@ -115,7 +116,6 @@ const sketch = ({context, width, height}) => {
     context.shadowOffsetX = -10;
     context.shadowOffsetY = 20;
 
-   drawStar({ context, x: 100, y: 100, radius: starSize, points: 5 });
 
     context.fill();
 
@@ -123,7 +123,6 @@ const sketch = ({context, width, height}) => {
 
     context.stroke();
     context.globalCompositeOperation = 'source-over'
-    
 
     context.lineWidth = 2;
     context.strokeStyle = '#292c3c'
@@ -132,10 +131,45 @@ const sketch = ({context, width, height}) => {
    context.restore();
   });
 
+  stars.forEach(rect => { 
+    const {x, y, w , h, fill, stroke, blend} = rect;
+    let shadowColor;
+
+    context.save();
+    context.translate(-mask.x , -mask.y);
+    context.translate(x , y);
+
+    context.strokeStyle = stroke;
+    context.fillStyle = fill;
+    context.lineWidth = 15;
+    //drawOffsetCircles({ context, x: 400, y: 400, maxRadius: 150, rings: 5 });
+
+    context.globalCompositeOperation = blend
+
+    drawStar({ context, x: x * 0.75, y: y * 0.5, radius: starSize, points: 5 });
+
+    shadowColor = Color.offsetHSL(fill, 0, 0, -20)
+    shadowColor.rgba[3] = 0.5;
+
+    context.shadowColor = Color.style(shadowColor.rgba);
+    context.shadowOffsetX = -10;
+    context.shadowOffsetY = 20;
+
+
+    context.fill();
+
+    context.shadowColor = null
+
+    context.stroke();
+    context.globalCompositeOperation = 'source-over'
+
+    context.lineWidth = 2;
+    context.strokeStyle = '#292c3c'
+    context.stroke();
+
+   context.restore();
+  });
   context.restore();
-// Draw stars (on top of rectangles)
-
-
 
   //Polygon Outline
   context.save();
@@ -205,9 +239,12 @@ const drawStar = ({ context, x, y, radius, points }) => {
     const angle = i * slice * 0.5 - Math.PI * 0.5;
     const r = i % 2 === 0 ? radius : innerRadius;
     context.lineTo(x + Math.cos(angle) * r, y + Math.sin(angle) * r);
+    context.stroke();
+
   }
   context.closePath();
 };
+
 
 
 
